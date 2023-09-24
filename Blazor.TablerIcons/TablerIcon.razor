@@ -1,0 +1,14 @@
+﻿@namespace Blazor.TablerIcons
+
+<span class="@Class">
+    @(Icon.ToRenderFragment())
+</span>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public TablerIconType Icon { get; set; }
+    
+    [Parameter]
+    public string? Class { get; set; }
+}
