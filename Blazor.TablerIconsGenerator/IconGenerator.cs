@@ -31,17 +31,19 @@ public class IconGenerator : IIncrementalGenerator
 
 			var enumSb = new StringBuilder();
 			enumSb.AppendLine($"namespace {projNamespace};");
-			enumSb.AppendLine("public enum TablerIconType");
+			enumSb.AppendLine("public enum TablerIcon");
 			enumSb.AppendLine("{");
+			enumSb.AppendLine("None,");
 
 			var extensionsSb = new StringBuilder();
 			extensionsSb.AppendLine($"namespace {projNamespace};");
-			extensionsSb.AppendLine("public static partial class TablerIconTypeExtensions");
+			extensionsSb.AppendLine("public static partial class TablerIconExtensions");
 			extensionsSb.AppendLine("{");
 
 			var extensionsMethodSb = new StringBuilder();
 			extensionsMethodSb.AppendLine($"namespace {projNamespace};");
-			extensionsMethodSb.AppendLine("public static partial class TablerIconTypeExtensions");
+			extensionsMethodSb.AppendLine("#nullable enable");
+			extensionsMethodSb.AppendLine("public static partial class TablerIconExtensions");
 			extensionsMethodSb.AppendLine("{");
 
 			extensionsMethodSb.AppendLine("""
@@ -67,8 +69,9 @@ public class IconGenerator : IIncrementalGenerator
 										  };
 										  """);
 
-			extensionsMethodSb.AppendLine($"public static Microsoft.AspNetCore.Components.RenderFragment ToRenderFragment(this {projNamespace}.TablerIconType icon) => icon switch");
+			extensionsMethodSb.AppendLine($"public static Microsoft.AspNetCore.Components.RenderFragment? ToRenderFragment(this {projNamespace}.TablerIcon icon) => icon switch");
 			extensionsMethodSb.AppendLine("{");
+			extensionsMethodSb.AppendLine($"{projNamespace}.TablerIcon.None => null,");
 
 			foreach (var assemblyName in iconAssemblyNames)
 			{
@@ -83,24 +86,24 @@ public class IconGenerator : IIncrementalGenerator
 				enumSb.Append(",\n");
 
 				extensionsSb.AppendLine(CreateRenderFragmentField(assembly, assemblyName, iconFormattedName));
-				extensionsMethodSb.AppendLine($"{projNamespace}.TablerIconType.{iconFormattedName} => {iconFormattedName},");
+				extensionsMethodSb.AppendLine($"{projNamespace}.TablerIcon.{iconFormattedName} => {iconFormattedName},");
 			}
 
 			enumSb.Remove(enumSb.Length - 2, 2);
 
 			enumSb.AppendLine("}");
 			var enumSource = enumSb.ToString();
-			context.AddSource("TablerIconType.g.cs", SourceText.From(enumSource, Encoding.UTF8));
+			context.AddSource("TablerIcon.g.cs", SourceText.From(enumSource, Encoding.UTF8));
 
 			extensionsSb.AppendLine("}");
 			var extensionsSource = extensionsSb.ToString();
-			context.AddSource("TablerIconTypeExtensions.fields.g.cs", SourceText.From(extensionsSource, Encoding.UTF8));
+			context.AddSource("TablerIconExtensions.fields.g.cs", SourceText.From(extensionsSource, Encoding.UTF8));
 
 			extensionsMethodSb.AppendLine("_ => throw new System.ArgumentOutOfRangeException(nameof(icon), icon, null)");
 			extensionsMethodSb.AppendLine("};");
 			extensionsMethodSb.AppendLine("}");
 			var extensionMethodSource = extensionsMethodSb.ToString();
-			context.AddSource("TablerIconTypeExtensions.methods.g.cs", SourceText.From(extensionMethodSource, Encoding.UTF8));
+			context.AddSource("TablerIconExtensions.methods.g.cs", SourceText.From(extensionMethodSource, Encoding.UTF8));
 		}
 		catch (OperationCanceledException ) { }
 		catch (Exception e)
@@ -176,14 +179,13 @@ public class IconGenerator : IIncrementalGenerator
 
 		var sb = new StringBuilder();
 		sb.Append($"private const string {iconName}Content =");
-		sb.Append('"');
-		sb.Append('"');
-		sb.Append('"');
+		sb.Append(""""
+		          """
+		          """");
 		sb.Append(content);
-		sb.Append('"');
-		sb.Append('"');
-		sb.Append('"');
-		sb.Append(';');
+		sb.Append(""""
+		          """;
+		          """");
 		sb.AppendLine();
 
 		string renderFragmentField =
